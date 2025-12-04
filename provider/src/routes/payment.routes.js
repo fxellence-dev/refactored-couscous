@@ -1,0 +1,32 @@
+const express = require('express');
+const router = express.Router();
+const AuthorizationController = require('../controllers/authorization.controller');
+const SettlementController = require('../controllers/settlement.controller');
+const {
+  validateAuthorization,
+  validateSettlement,
+  validateRefund
+} = require('../middleware/validation.middleware');
+
+// Health check
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+// Payment authorization
+router.post('/api/payments/authorize', validateAuthorization, AuthorizationController.authorizePayment);
+
+// Payment settlement
+router.post('/api/payments/settle', validateSettlement, SettlementController.settlePayment);
+
+// Get payment status
+router.get('/api/payments/:transactionId', SettlementController.getPaymentStatus);
+
+// Process refund
+router.post('/api/payments/refund', validateRefund, SettlementController.refundPayment);
+
+module.exports = router;

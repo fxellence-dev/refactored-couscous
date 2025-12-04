@@ -1,0 +1,582 @@
+openapi: 3.0.3
+info:
+  title: Payment Gateway API
+  description: |
+    Payment Gateway API for processing card payments including authorization, settlement, and refunds.
+    This API demonstrates bi-directional contract testing with PactFlow.
+  version: 1.0.0
+  contact:
+    name: Payment Gateway Team
+    email: payments@example.com
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.payment-gateway.example.com
+    description: Production server
+
+tags:
+  - name: Payments
+    description: Payment processing operations
+  - name: Health
+    description: Service health checks
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns the health status of the API
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/payments/authorize:
+    post:
+      tags:
+        - Payments
+      summary: Authorize a payment
+      description: |
+        Validates card details and authorizes a payment without capturing funds.
+        Returns an authorization code if successful.
+      operationId: authorizePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationRequest'
+            examples:
+              valid_card:
+                summary: Valid card authorization
+                value:
+                  cardNumber: "4111111111111111"
+                  expiryMonth: "12"
+                  expiryYear: "2025"
+                  cvv: "123"
+                  amount: 99.99
+                  currency: "USD"
+                  merchantId: "MERCH-12345"
+      responses:
+        '200':
+          description: Authorization successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResponse'
+              examples:
+                success:
+                  value:
+                    transactionId: "txn_abc123def456"
+                    status: "AUTHORIZED"
+                    authorizationCode: "AUTH-789012"
+                    amount: 99.99
+                    currency: "USD"
+                    timestamp: "2025-12-04T10:30:00Z"
+                    message: "Payment authorized successfully"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: Payment declined
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                declined:
+                  value:
+                    error: "PAYMENT_DECLINED"
+                    message: "Insufficient funds"
+                    transactionId: "txn_xyz789"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/settle:
+    post:
+      tags:
+        - Payments
+      summary: Settle a payment
+      description: |
+        Captures funds for a previously authorized payment.
+        This completes the payment transaction.
+      operationId: settlePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettlementRequest'
+            examples:
+              full_settlement:
+                summary: Full settlement
+                value:
+                  transactionId: "txn_abc123def456"
+                  authorizationCode: "AUTH-789012"
+                  amount: 99.99
+                  currency: "USD"
+      responses:
+        '200':
+          description: Settlement successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementResponse'
+              examples:
+                success:
+                  value:
+                    transactionId: "txn_abc123def456"
+                    settlementId: "settle_xyz456"
+                    status: "SETTLED"
+                    amount: 99.99
+                    currency: "USD"
+                    timestamp: "2025-12-04T10:35:00Z"
+                    message: "Payment settled successfully"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Transaction already settled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/{transactionId}:
+    get:
+      tags:
+        - Payments
+      summary: Get payment status
+      description: Retrieves the current status and details of a payment transaction
+      operationId: getPaymentStatus
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: The unique transaction identifier
+          schema:
+            type: string
+            example: "txn_abc123def456"
+      responses:
+        '200':
+          description: Payment details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+              examples:
+                authorized:
+                  value:
+                    transactionId: "txn_abc123def456"
+                    status: "AUTHORIZED"
+                    amount: 99.99
+                    currency: "USD"
+                    authorizationCode: "AUTH-789012"
+                    createdAt: "2025-12-04T10:30:00Z"
+                    updatedAt: "2025-12-04T10:30:00Z"
+                settled:
+                  value:
+                    transactionId: "txn_abc123def456"
+                    status: "SETTLED"
+                    amount: 99.99
+                    currency: "USD"
+                    authorizationCode: "AUTH-789012"
+                    settlementId: "settle_xyz456"
+                    createdAt: "2025-12-04T10:30:00Z"
+                    updatedAt: "2025-12-04T10:35:00Z"
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/refund:
+    post:
+      tags:
+        - Payments
+      summary: Refund a payment
+      description: |
+        Processes a full or partial refund for a settled payment transaction.
+      operationId: refundPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+            examples:
+              full_refund:
+                summary: Full refund
+                value:
+                  transactionId: "txn_abc123def456"
+                  amount: 99.99
+                  currency: "USD"
+                  reason: "Customer requested refund"
+              partial_refund:
+                summary: Partial refund
+                value:
+                  transactionId: "txn_abc123def456"
+                  amount: 50.00
+                  currency: "USD"
+                  reason: "Partial order cancellation"
+      responses:
+        '200':
+          description: Refund processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+              examples:
+                success:
+                  value:
+                    transactionId: "txn_abc123def456"
+                    refundId: "refund_123abc"
+                    status: "REFUNDED"
+                    amount: 99.99
+                    currency: "USD"
+                    timestamp: "2025-12-04T11:00:00Z"
+                    message: "Refund processed successfully"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Cannot refund transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-04T10:00:00Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    AuthorizationRequest:
+      type: object
+      required:
+        - cardNumber
+        - expiryMonth
+        - expiryYear
+        - cvv
+        - amount
+        - currency
+        - merchantId
+      properties:
+        cardNumber:
+          type: string
+          pattern: '^\d{13,19}$'
+          description: Card number (13-19 digits)
+          example: "4111111111111111"
+        expiryMonth:
+          type: string
+          pattern: '^\d{2}$'
+          description: Expiry month (01-12)
+          example: "12"
+        expiryYear:
+          type: string
+          pattern: '^\d{4}$'
+          description: Expiry year (YYYY)
+          example: "2025"
+        cvv:
+          type: string
+          pattern: '^\d{3,4}$'
+          description: Card security code
+          example: "123"
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          description: Payment amount
+          example: 99.99
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: ISO 4217 currency code
+          example: "USD"
+        merchantId:
+          type: string
+          description: Merchant identifier
+          example: "MERCH-12345"
+
+    AuthorizationResponse:
+      type: object
+      required:
+        - transactionId
+        - status
+        - authorizationCode
+        - amount
+        - currency
+        - timestamp
+      properties:
+        transactionId:
+          type: string
+          example: "txn_abc123def456"
+        status:
+          type: string
+          enum: [AUTHORIZED, DECLINED]
+          example: "AUTHORIZED"
+        authorizationCode:
+          type: string
+          example: "AUTH-789012"
+        amount:
+          type: number
+          format: float
+          example: 99.99
+        currency:
+          type: string
+          example: "USD"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-04T10:30:00Z"
+        message:
+          type: string
+          example: "Payment authorized successfully"
+
+    SettlementRequest:
+      type: object
+      required:
+        - transactionId
+        - authorizationCode
+        - amount
+        - currency
+      properties:
+        transactionId:
+          type: string
+          example: "txn_abc123def456"
+        authorizationCode:
+          type: string
+          example: "AUTH-789012"
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 99.99
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          example: "USD"
+
+    SettlementResponse:
+      type: object
+      required:
+        - transactionId
+        - settlementId
+        - status
+        - amount
+        - currency
+        - timestamp
+      properties:
+        transactionId:
+          type: string
+          example: "txn_abc123def456"
+        settlementId:
+          type: string
+          example: "settle_xyz456"
+        status:
+          type: string
+          enum: [SETTLED]
+          example: "SETTLED"
+        amount:
+          type: number
+          format: float
+          example: 99.99
+        currency:
+          type: string
+          example: "USD"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-04T10:35:00Z"
+        message:
+          type: string
+          example: "Payment settled successfully"
+
+    PaymentStatusResponse:
+      type: object
+      required:
+        - transactionId
+        - status
+        - amount
+        - currency
+        - createdAt
+        - updatedAt
+      properties:
+        transactionId:
+          type: string
+          example: "txn_abc123def456"
+        status:
+          type: string
+          enum: [AUTHORIZED, SETTLED, REFUNDED, DECLINED, FAILED]
+          example: "SETTLED"
+        amount:
+          type: number
+          format: float
+          example: 99.99
+        currency:
+          type: string
+          example: "USD"
+        authorizationCode:
+          type: string
+          example: "AUTH-789012"
+        settlementId:
+          type: string
+          example: "settle_xyz456"
+        refundId:
+          type: string
+          example: "refund_123abc"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-12-04T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-12-04T10:35:00Z"
+
+    RefundRequest:
+      type: object
+      required:
+        - transactionId
+        - amount
+        - currency
+        - reason
+      properties:
+        transactionId:
+          type: string
+          example: "txn_abc123def456"
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 99.99
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          example: "USD"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "Customer requested refund"
+
+    RefundResponse:
+      type: object
+      required:
+        - transactionId
+        - refundId
+        - status
+        - amount
+        - currency
+        - timestamp
+      properties:
+        transactionId:
+          type: string
+          example: "txn_abc123def456"
+        refundId:
+          type: string
+          example: "refund_123abc"
+        status:
+          type: string
+          enum: [REFUNDED]
+          example: "REFUNDED"
+        amount:
+          type: number
+          format: float
+          example: 99.99
+        currency:
+          type: string
+          example: "USD"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-04T11:00:00Z"
+        message:
+          type: string
+          example: "Refund processed successfully"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "INVALID_REQUEST"
+        message:
+          type: string
+          example: "Invalid card number format"
+        transactionId:
+          type: string
+          example: "txn_xyz789"
+        details:
+          type: object
+          additionalProperties: true
