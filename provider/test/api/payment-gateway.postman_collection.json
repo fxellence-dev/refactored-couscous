@@ -1,0 +1,447 @@
+{
+  "info": {
+    "name": "Payment Gateway API Tests",
+    "description": "Functional API tests for Payment Gateway - Provider Contract Verification",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "payment-gateway-tests"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has correct structure\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData).to.have.property('timestamp');",
+              "    pm.expect(jsonData).to.have.property('version');",
+              "});",
+              "",
+              "pm.test(\"Status is healthy\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('healthy');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Authorize Payment - Success",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('transactionId');",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData).to.have.property('authorizationCode');",
+              "    pm.expect(jsonData).to.have.property('amount');",
+              "    pm.expect(jsonData).to.have.property('currency');",
+              "    pm.expect(jsonData).to.have.property('timestamp');",
+              "});",
+              "",
+              "pm.test(\"Status is AUTHORIZED\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('AUTHORIZED');",
+              "});",
+              "",
+              "pm.test(\"Amount matches request\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.amount).to.eql(99.99);",
+              "});",
+              "",
+              "// Save transaction ID for subsequent tests",
+              "pm.environment.set(\"transactionId\", pm.response.json().transactionId);",
+              "pm.environment.set(\"authorizationCode\", pm.response.json().authorizationCode);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cardNumber\": \"4111111111111111\",\n  \"expiryMonth\": \"12\",\n  \"expiryYear\": \"2025\",\n  \"cvv\": \"123\",\n  \"amount\": 99.99,\n  \"currency\": \"USD\",\n  \"merchantId\": \"MERCH-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/authorize",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "authorize"]
+        }
+      }
+    },
+    {
+      "name": "Authorize Payment - Declined Card",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 402\", function () {",
+              "    pm.response.to.have.status(402);",
+              "});",
+              "",
+              "pm.test(\"Response has error details\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    pm.expect(jsonData.error).to.eql('PAYMENT_DECLINED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cardNumber\": \"4000000000000000\",\n  \"expiryMonth\": \"12\",\n  \"expiryYear\": \"2025\",\n  \"cvv\": \"123\",\n  \"amount\": 50.00,\n  \"currency\": \"USD\",\n  \"merchantId\": \"MERCH-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/authorize",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "authorize"]
+        }
+      }
+    },
+    {
+      "name": "Authorize Payment - Invalid Card Number",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Response has validation error\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "    pm.expect(jsonData.error).to.eql('VALIDATION_ERROR');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cardNumber\": \"123\",\n  \"expiryMonth\": \"12\",\n  \"expiryYear\": \"2025\",\n  \"cvv\": \"123\",\n  \"amount\": 99.99,\n  \"currency\": \"USD\",\n  \"merchantId\": \"MERCH-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/authorize",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "authorize"]
+        }
+      }
+    },
+    {
+      "name": "Get Payment Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('transactionId');",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData).to.have.property('amount');",
+              "    pm.expect(jsonData).to.have.property('currency');",
+              "    pm.expect(jsonData).to.have.property('createdAt');",
+              "    pm.expect(jsonData).to.have.property('updatedAt');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/{{transactionId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "{{transactionId}}"]
+        }
+      }
+    },
+    {
+      "name": "Get Payment Status - Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Response has error\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "    pm.expect(jsonData.error).to.eql('TRANSACTION_NOT_FOUND');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/txn_nonexistent",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "txn_nonexistent"]
+        }
+      }
+    },
+    {
+      "name": "Settle Payment - Success",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('transactionId');",
+              "    pm.expect(jsonData).to.have.property('settlementId');",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData).to.have.property('amount');",
+              "    pm.expect(jsonData).to.have.property('currency');",
+              "    pm.expect(jsonData).to.have.property('timestamp');",
+              "});",
+              "",
+              "pm.test(\"Status is SETTLED\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('SETTLED');",
+              "});",
+              "",
+              "pm.test(\"Settlement ID is present\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.settlementId).to.match(/^settle_/);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"{{transactionId}}\",\n  \"authorizationCode\": \"{{authorizationCode}}\",\n  \"amount\": 99.99,\n  \"currency\": \"USD\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/settle",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "settle"]
+        }
+      }
+    },
+    {
+      "name": "Settle Payment - Already Settled",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 409\", function () {",
+              "    pm.response.to.have.status(409);",
+              "});",
+              "",
+              "pm.test(\"Response has error\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "    pm.expect(jsonData.error).to.eql('ALREADY_SETTLED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"{{transactionId}}\",\n  \"authorizationCode\": \"{{authorizationCode}}\",\n  \"amount\": 99.99,\n  \"currency\": \"USD\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/settle",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "settle"]
+        }
+      }
+    },
+    {
+      "name": "Refund Payment - Success",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('transactionId');",
+              "    pm.expect(jsonData).to.have.property('refundId');",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData).to.have.property('amount');",
+              "    pm.expect(jsonData).to.have.property('currency');",
+              "    pm.expect(jsonData).to.have.property('timestamp');",
+              "});",
+              "",
+              "pm.test(\"Status is REFUNDED\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('REFUNDED');",
+              "});",
+              "",
+              "pm.test(\"Refund ID is present\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.refundId).to.match(/^refund_/);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"{{transactionId}}\",\n  \"amount\": 99.99,\n  \"currency\": \"USD\",\n  \"reason\": \"Customer requested refund\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/refund",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "refund"]
+        }
+      }
+    },
+    {
+      "name": "Refund Payment - Transaction Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Response has error\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "    pm.expect(jsonData.error).to.eql('TRANSACTION_NOT_FOUND');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"txn_nonexistent\",\n  \"amount\": 50.00,\n  \"currency\": \"USD\",\n  \"reason\": \"Test refund\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/payments/refund",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payments", "refund"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
