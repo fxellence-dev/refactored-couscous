@@ -1,0 +1,56 @@
+name: Pact Broker Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - start
+          - stop
+          - restart
+          - status
+
+jobs:
+  manage-broker:
+    name: Manage Pact Broker
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start Pact Broker
+        if: github.event.inputs.action == 'start'
+        run: |
+          echo "🚀 Starting Pact Broker..."
+          docker-compose up -d
+          sleep 10
+          curl -f http://localhost:9292/ || exit 1
+          echo "✅ Pact Broker started successfully"
+
+      - name: Stop Pact Broker
+        if: github.event.inputs.action == 'stop'
+        run: |
+          echo "🛑 Stopping Pact Broker..."
+          docker-compose down
+          echo "✅ Pact Broker stopped"
+
+      - name: Restart Pact Broker
+        if: github.event.inputs.action == 'restart'
+        run: |
+          echo "🔄 Restarting Pact Broker..."
+          docker-compose restart
+          sleep 10
+          curl -f http://localhost:9292/ || exit 1
+          echo "✅ Pact Broker restarted successfully"
+
+      - name: Check Broker Status
+        if: github.event.inputs.action == 'status'
+        run: |
+          echo "📊 Checking Pact Broker status..."
+          docker-compose ps
+          curl -f http://localhost:9292/diagnostic/status/heartbeat || exit 1
+          echo "✅ Pact Broker is healthy"

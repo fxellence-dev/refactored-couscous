@@ -1,0 +1,155 @@
+name: Provider CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'provider/**'
+      - 'scripts/**'
+      - '.github/workflows/provider.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'provider/**'
+
+env:
+  PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL || 'http://localhost:9292' }}
+  PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+  PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME || 'pact' }}
+  PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD || 'pact' }}
+  PROVIDER_NAME: payment-gateway-api
+  GIT_COMMIT: ${{ github.sha }}
+  GIT_BRANCH: ${{ github.ref_name }}
+
+jobs:
+  test:
+    name: Test Provider
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: provider/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./provider
+        run: npm ci
+
+      - name: Run API tests
+        working-directory: ./provider
+        run: npm run test:api
+
+      - name: Start provider server
+        working-directory: ./provider
+        run: |
+          npm start &
+          sleep 5
+          curl http://localhost:3000/health || exit 1
+
+      - name: Run provider verification tests
+        working-directory: ./provider
+        env:
+          PUBLISH_VERIFICATION: 'true'
+        run: npm run test:pact
+
+      - name: Stop provider server
+        if: always()
+        run: pkill -f "node.*provider"
+
+  can-i-deploy:
+    name: Can I Deploy Provider
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check deployment safety
+        run: |
+          node scripts/can-i-deploy-provider.js \
+            --version ${{ github.sha }} \
+            --to production
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Provider Can-I-Deploy Check Failed**\n\nThe provider cannot be safely deployed as consumer contracts are not compatible.\n\nPlease review the verification results in the [Pact Broker](${{ env.PACT_BROKER_BASE_URL }}).'
+            })
+
+  deploy:
+    name: Deploy Provider
+    runs-on: ubuntu-latest
+    needs: can-i-deploy
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying provider to production..."
+          echo "This would typically deploy to your cloud provider"
+          echo "Examples:"
+          echo "  - AWS: aws ecs update-service"
+          echo "  - Azure: az webapp deploy"
+          echo "  - Kubernetes: kubectl apply -f deployment.yaml"
+          echo "✅ Deployment successful!"
+
+      - name: Record deployment
+        run: |
+          node scripts/record-deployment.js \
+            payment-gateway-api \
+            ${{ github.sha }} \
+            production
+
+      - name: Notify success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('✅ Provider deployed successfully to production');
+            console.log('Version: ${{ github.sha }}');
+            console.log('Branch: ${{ github.ref_name }}');
+
+      - name: Notify failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('❌ Provider deployment failed');

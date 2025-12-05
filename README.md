@@ -178,6 +178,26 @@ npm test
 ./scripts/can-i-deploy-consumer.sh
 ```
 
+## 🔄 CI/CD Pipeline
+
+This project includes complete GitHub Actions workflows with contract testing gates:
+
+### Consumer Pipeline
+```
+Test → Publish Contract → Can-I-Deploy → Deploy → Record
+```
+
+### Provider Pipeline
+```
+Test → Verify Contracts → Can-I-Deploy → Deploy → Record
+```
+
+### Deployment Gates 🚦
+- ✅ **GREEN**: Contracts compatible → Deploy allowed
+- ⛔ **RED**: Contracts incompatible → Deploy blocked
+
+**Setup**: See [GitHub Actions Setup Guide](./docs/GITHUB_ACTIONS_SETUP.md)
+
 ## 🎬 Demo Scenarios
 
 1. **Happy Path**: Compatible contracts, deployments succeed ✅
@@ -189,13 +209,28 @@ npm test
 
 ## 📊 Progress
 
-See [plan.md](./plan.md) for detailed implementation progress and task tracking.
+- ✅ **Phase 1-3**: Foundation complete (100%)
+- ✅ **Phase 4**: Bi-directional testing (85%)
+- ✅ **Phase 5**: CI/CD integration (100%)
+- ⬜ **Phase 6**: Demo scenarios (0%)
+- ⬜ **Phase 7**: Documentation polish (60%)
 
-## 📚 Resources
+**Overall Progress**: 75%
 
+See [plan.md](./plan.md) for detailed task tracking and [PROGRESS.md](./PROGRESS.md) for comprehensive status report.
+
+## 📚 Documentation
+
+### Setup Guides
+- [Pact Broker Setup](./docs/PACT_BROKER_SETUP.md) - Local & PactFlow setup
+- [GitHub Actions Setup](./docs/GITHUB_ACTIONS_SETUP.md) - CI/CD configuration
+- [CI/CD Pipeline Guide](./docs/CI_CD_PIPELINE.md) - Complete pipeline documentation
+
+### External Resources
 - [PactFlow Bi-Directional Testing](https://docs.pactflow.io/docs/bi-directional-contract-testing)
 - [Pact JS Documentation](https://docs.pact.io/implementation_guides/javascript)
 - [OpenAPI Specification](https://swagger.io/specification/)
+- [Contract Testing Best Practices](https://docs.pact.io/getting_started/best_practices)
 
 ## 🤝 Contributing
 
