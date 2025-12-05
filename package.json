@@ -1,0 +1,29 @@
+{
+  "name": "pact-testing",
+  "version": "1.0.0",
+  "description": "End-to-end bi-directional Pact testing example with payment gateway services",
+  "scripts": {
+    "start:broker": "docker-compose up -d",
+    "stop:broker": "docker-compose down",
+    "publish:consumer": "node scripts/publish-consumer-contract.js",
+    "publish:provider": "node scripts/publish-provider-contract.js",
+    "can-i-deploy:consumer": "node scripts/can-i-deploy-consumer.js",
+    "can-i-deploy:provider": "node scripts/can-i-deploy-provider.js",
+    "record-deployment": "node scripts/record-deployment.js",
+    "test:provider": "cd provider && npm test",
+    "test:consumer": "cd consumer && npm test"
+  },
+  "keywords": [
+    "pact",
+    "contract-testing",
+    "bi-directional",
+    "pactflow",
+    "payment-gateway"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@pact-foundation/pact-node": "^10.17.7",
+    "dotenv": "^16.3.1"
+  }
+}
