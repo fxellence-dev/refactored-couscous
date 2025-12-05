@@ -1,0 +1,40 @@
+{
+  "name": "payment-client",
+  "version": "1.0.0",
+  "description": "Payment Client - Consumer for bi-directional Pact testing demo",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "jest",
+    "test:pact": "jest --testPathPattern=pact",
+    "test:watch": "jest --watch",
+    "publish:contract": "node ../scripts/publish-consumer-contract.js",
+    "can-i-deploy": "node ../scripts/can-i-deploy-consumer.js"
+  },
+  "keywords": [
+    "pact",
+    "contract-testing",
+    "payment-client",
+    "consumer"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@pact-foundation/pact": "^12.1.0",
+    "jest": "^29.7.0",
+    "jest-pact": "^0.11.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ],
+    "collectCoverage": false,
+    "coverageDirectory": "coverage",
+    "testTimeout": 30000
+  }
+}

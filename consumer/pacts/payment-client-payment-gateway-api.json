@@ -1,0 +1,646 @@
+{
+  "consumer": {
+    "name": "payment-client"
+  },
+  "interactions": [
+    {
+      "description": "a request to get settled payment status",
+      "providerStates": [
+        {
+          "name": "a settled payment exists"
+        }
+      ],
+      "request": {
+        "matchingRules": {
+          "path": {
+            "combine": "AND",
+            "matchers": [
+              {
+                "match": "regex",
+                "regex": "/api/payments/txn_[a-z0-9\\-]+"
+              }
+            ]
+          }
+        },
+        "method": "GET",
+        "path": "/api/payments/txn_settled123"
+      },
+      "response": {
+        "body": {
+          "amount": 150,
+          "authorizationCode": "AUTH-123456",
+          "createdAt": "2025-12-05T10:00:00Z",
+          "currency": "USD",
+          "settlementId": "settle_abc123",
+          "status": "SETTLED",
+          "transactionId": "txn_settled123",
+          "updatedAt": "2025-12-05T10:05:00Z"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.authorizationCode": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.createdAt": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "match": "datetime"
+                }
+              ]
+            },
+            "$.settlementId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.updatedAt": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "match": "datetime"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request to refund payment",
+      "providerStates": [
+        {
+          "name": "a settled payment exists"
+        }
+      ],
+      "request": {
+        "body": {
+          "amount": 99.99,
+          "currency": "USD",
+          "reason": "Customer requested refund",
+          "transactionId": "txn_settled123"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.reason": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "method": "POST",
+        "path": "/api/payments/refund"
+      },
+      "response": {
+        "body": {
+          "amount": 99.99,
+          "currency": "USD",
+          "message": "Refund processed successfully",
+          "refundId": "refund_123abc",
+          "status": "REFUNDED",
+          "timestamp": "2025-12-05T11:00:00Z",
+          "transactionId": "txn_settled123"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.refundId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "refund_[a-z0-9]+"
+                }
+              ]
+            },
+            "$.timestamp": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "match": "datetime"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request to authorize payment",
+      "providerStates": [
+        {
+          "name": "a valid payment card"
+        }
+      ],
+      "request": {
+        "body": {
+          "amount": 99.99,
+          "cardNumber": "4111111111111111",
+          "currency": "USD",
+          "cvv": "123",
+          "expiryMonth": "12",
+          "expiryYear": "2025",
+          "merchantId": "MERCH-12345"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/api/payments/authorize"
+      },
+      "response": {
+        "body": {
+          "amount": 99.99,
+          "authorizationCode": "AUTH-789012",
+          "currency": "USD",
+          "message": "Payment authorized successfully",
+          "status": "AUTHORIZED",
+          "timestamp": "2025-12-05T10:00:00Z",
+          "transactionId": "txn_abc123def456"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.authorizationCode": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "AUTH-\\d{6}"
+                }
+              ]
+            },
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.timestamp": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "match": "datetime"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request to get payment status",
+      "providerStates": [
+        {
+          "name": "an authorized payment exists"
+        }
+      ],
+      "request": {
+        "matchingRules": {
+          "path": {
+            "combine": "AND",
+            "matchers": [
+              {
+                "match": "regex",
+                "regex": "/api/payments/txn_[a-z0-9\\-]+"
+              }
+            ]
+          }
+        },
+        "method": "GET",
+        "path": "/api/payments/txn_abc123def456"
+      },
+      "response": {
+        "body": {
+          "amount": 99.99,
+          "authorizationCode": "AUTH-789012",
+          "createdAt": "2025-12-05T10:00:00Z",
+          "currency": "USD",
+          "status": "AUTHORIZED",
+          "transactionId": "txn_abc123def456",
+          "updatedAt": "2025-12-05T10:00:00Z"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.authorizationCode": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.createdAt": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "match": "datetime"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.updatedAt": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "match": "datetime"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request to settle payment",
+      "providerStates": [
+        {
+          "name": "an authorized payment exists"
+        }
+      ],
+      "request": {
+        "body": {
+          "amount": 99.99,
+          "authorizationCode": "AUTH-789012",
+          "currency": "USD",
+          "transactionId": "txn_abc123def456"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.authorizationCode": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "method": "POST",
+        "path": "/api/payments/settle"
+      },
+      "response": {
+        "body": {
+          "amount": 99.99,
+          "currency": "USD",
+          "message": "Payment settled successfully",
+          "settlementId": "settle_xyz456",
+          "status": "SETTLED",
+          "timestamp": "2025-12-05T10:05:00Z",
+          "transactionId": "txn_abc123def456"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.settlementId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "settle_[a-z0-9]+"
+                }
+              ]
+            },
+            "$.timestamp": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "format": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "match": "datetime"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request to authorize payment with invalid card",
+      "providerStates": [
+        {
+          "name": "an invalid payment card"
+        }
+      ],
+      "request": {
+        "body": {
+          "amount": 50,
+          "cardNumber": "4000000000000000",
+          "currency": "USD",
+          "cvv": "123",
+          "expiryMonth": "12",
+          "expiryYear": "2025",
+          "merchantId": "MERCH-12345"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/api/payments/authorize"
+      },
+      "response": {
+        "body": {
+          "error": "PAYMENT_DECLINED",
+          "message": "Invalid card number",
+          "transactionId": "txn_xyz789"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.transactionId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 402
+      }
+    },
+    {
+      "description": "a request to get non-existent payment status",
+      "providerStates": [
+        {
+          "name": "no transaction exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/payments/txn_nonexistent"
+      },
+      "response": {
+        "body": {
+          "error": "TRANSACTION_NOT_FOUND",
+          "message": "Transaction not found",
+          "transactionId": "txn_nonexistent"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 404
+      }
+    },
+    {
+      "description": "a request to refund non-existent payment",
+      "providerStates": [
+        {
+          "name": "no transaction exists"
+        }
+      ],
+      "request": {
+        "body": {
+          "amount": 50,
+          "currency": "USD",
+          "reason": "Test refund",
+          "transactionId": "txn_nonexistent"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/api/payments/refund"
+      },
+      "response": {
+        "body": {
+          "error": "TRANSACTION_NOT_FOUND",
+          "message": "Transaction not found",
+          "transactionId": "txn_nonexistent"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 404
+      }
+    },
+    {
+      "description": "a request to settle non-existent payment",
+      "providerStates": [
+        {
+          "name": "no transaction exists"
+        }
+      ],
+      "request": {
+        "body": {
+          "amount": 99.99,
+          "authorizationCode": "AUTH-000000",
+          "currency": "USD",
+          "transactionId": "txn_nonexistent"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/api/payments/settle"
+      },
+      "response": {
+        "body": {
+          "error": "TRANSACTION_NOT_FOUND",
+          "message": "Transaction not found",
+          "transactionId": "txn_nonexistent"
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {},
+          "status": {}
+        },
+        "status": 404
+      }
+    }
+  ],
+  "metadata": {
+    "pact-js": {
+      "version": "12.5.2"
+    },
+    "pactRust": {
+      "ffi": "0.4.20",
+      "models": "1.2.0"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "payment-gateway-api"
+  }
+}
