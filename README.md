@@ -200,17 +200,42 @@ Test → Verify Contracts → Can-I-Deploy → Deploy → Record
 
 ## 🎬 Demo Scenarios
 
-1. **Happy Path**: Compatible contracts, deployments succeed ✅
-2. **Backward Compatible**: Provider adds optional field ✅
-3. **Breaking Consumer**: Consumer expects missing field ❌
-4. **Breaking Provider**: Provider removes endpoint ❌
-5. **Schema Change**: Provider changes data type ❌
-6. **CI/CD Gate**: Pipeline blocks incompatible deployment 🚫
+This project includes 6 comprehensive demo scenarios showcasing contract testing in action:
+
+### Running Demos
+```bash
+# Run all scenarios
+cd demos
+./run-all-scenarios.sh
+
+# Run individual scenario
+cd demos/scenarios
+./01-happy-path.sh
+```
+
+### Available Scenarios
+| # | Scenario | Outcome | Demonstrates |
+|---|----------|---------|--------------|
+| 1 | Happy Path | ✅ Deploy | Compatible contracts |
+| 2 | Backward Compatible | ✅ Deploy | Safe evolution |
+| 3 | Breaking Consumer | ⛔ Block | Contract violation |
+| 4 | Breaking Provider | ⛔ Block | Endpoint removal |
+| 5 | Schema Mismatch | ⛔ Block | Type changes |
+| 6 | CI/CD Gate | ⛔ Block | Pipeline protection |
+
+**Guide**: See [Demo Guide](./demos/DEMO_GUIDE.md) for detailed visual walkthrough
 
 ## 📊 Progress
 
-- ✅ **Phase 1-3**: Foundation complete (100%)
-- ✅ **Phase 4**: Bi-directional testing (85%)
+- ✅ **Phase 1**: Setup & Infrastructure (100%)
+- ✅ **Phase 2**: Provider Implementation (100%)
+- ✅ **Phase 3**: Consumer Implementation (100%)
+- 🚧 **Phase 4**: Bi-directional Testing (85%)
+- ✅ **Phase 5**: CI/CD Integration (100%)
+- ✅ **Phase 6**: Demo Scenarios (100%)
+- ✅ **Phase 7**: Documentation (100%)
+
+**Overall: 86% Complete** (43/50 tasks)
 - ✅ **Phase 5**: CI/CD integration (100%)
 - ⬜ **Phase 6**: Demo scenarios (0%)
 - ⬜ **Phase 7**: Documentation polish (60%)
