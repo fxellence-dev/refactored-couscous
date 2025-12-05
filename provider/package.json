@@ -6,8 +6,10 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "npm run test:api",
+    "test": "npm run test:api && npm run test:pact",
     "test:api": "newman run test/api/payment-gateway.postman_collection.json",
+    "test:pact": "jest test/pact --testTimeout=30000",
+    "test:pact:publish": "PUBLISH_VERIFICATION=true npm run test:pact",
     "test:dredd": "dredd openapi/payment-gateway-spec.yaml http://localhost:3000",
     "publish:contract": "node ../scripts/publish-provider-contract.js",
     "can-i-deploy": "node ../scripts/can-i-deploy-provider.js"
@@ -21,18 +23,20 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
-    "uuid": "^9.0.1",
-    "dotenv": "^16.3.1"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
-    "newman": "^6.0.0",
-    "dredd": "^14.1.0",
+    "@pact-foundation/pact": "^16.0.2",
     "@pact-foundation/pact-node": "^10.17.7",
+    "dredd": "^14.1.0",
+    "jest": "^30.2.0",
+    "newman": "^6.0.0",
+    "nodemon": "^3.0.2",
     "swagger-ui-express": "^5.0.0",
     "yamljs": "^0.3.0"
   }
