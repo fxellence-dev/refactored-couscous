@@ -34,10 +34,12 @@ This project showcases **bi-directional contract testing** with PactFlow, featur
 
 ## 🚀 Quick Start
 
+📖 **[Complete End-to-End Guide](./END_TO_END_GUIDE.md)** - Comprehensive walkthrough (60-90 minutes)
+
 ### Prerequisites
 
 - Node.js 18+ and npm
-- PactFlow account (or local Pact Broker)
+- Docker & Docker Compose
 - Git
 
 ### Installation
@@ -47,13 +49,13 @@ This project showcases **bi-directional contract testing** with PactFlow, featur
 git clone <repo-url>
 cd Pact-Testing
 
-# Install provider dependencies
-cd provider
+# Install dependencies
 npm install
+cd provider && npm install && cd ..
+cd consumer && npm install && cd ..
 
-# Install consumer dependencies
-cd ../consumer
-npm install
+# Start Pact Broker
+docker compose up -d
 ```
 
 ### Running Locally
@@ -236,20 +238,22 @@ cd demos/scenarios
 - ✅ **Phase 7**: Documentation (100%)
 
 **Overall: 86% Complete** (43/50 tasks)
-- ✅ **Phase 5**: CI/CD integration (100%)
-- ⬜ **Phase 6**: Demo scenarios (0%)
-- ⬜ **Phase 7**: Documentation polish (60%)
 
-**Overall Progress**: 75%
-
-See [plan.md](./plan.md) for detailed task tracking and [PROGRESS.md](./PROGRESS.md) for comprehensive status report.
+See [plan.md](./plan.md) for detailed task tracking.
 
 ## 📚 Documentation
 
-### Setup Guides
-- [Pact Broker Setup](./docs/PACT_BROKER_SETUP.md) - Local & PactFlow setup
-- [GitHub Actions Setup](./docs/GITHUB_ACTIONS_SETUP.md) - CI/CD configuration
+### 🚀 Getting Started
+- **[End-to-End Guide](./END_TO_END_GUIDE.md)** ⭐ - Complete walkthrough: setup → test → teardown (60-90 min)
+- [Demo Quick Start](./demos/QUICKSTART.md) - Fast reference for running demos
+- [Demo Visual Guide](./demos/DEMO_GUIDE.md) - Comprehensive demo walkthrough with diagrams
+
+### 🛠️ Technical Guides
 - [CI/CD Pipeline Guide](./docs/CI_CD_PIPELINE.md) - Complete pipeline documentation
+- [GitHub Actions Setup](./docs/GITHUB_ACTIONS_SETUP.md) - CI/CD configuration
+- [Phase 5 Summary](./docs/PHASE5_SUMMARY.md) - CI/CD completion report
+- [Phase 6 Summary](./docs/PHASE6_SUMMARY.md) - Demo scenarios report
+- [Project Summary](./PROJECT_SUMMARY.md) - Overall project completion status
 
 ### External Resources
 - [PactFlow Bi-Directional Testing](https://docs.pactflow.io/docs/bi-directional-contract-testing)
