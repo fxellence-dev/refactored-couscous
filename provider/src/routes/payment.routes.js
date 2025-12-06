@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const AuthorizationController = require('../controllers/authorization.controller');
 const SettlementController = require('../controllers/settlement.controller');
+const PactStateController = require('../controllers/pact-state.controller');
 const {
   validateAuthorization,
   validateSettlement,
@@ -16,6 +17,10 @@ router.get('/health', (req, res) => {
     version: '1.0.0'
   });
 });
+
+// Pact provider state endpoints (for contract testing)
+router.post('/_pact/provider-states', PactStateController.handleProviderState);
+router.get('/_pact/provider-states', PactStateController.healthCheck);
 
 // Payment authorization
 router.post('/api/payments/authorize', validateAuthorization, AuthorizationController.authorizePayment);

@@ -44,7 +44,11 @@ describe('Pact Verification - Payment Gateway API', () => {
       // Logging
       logLevel: 'info',
       
-      // State handlers for provider states
+      // Use state change URL to communicate with running provider
+      // This allows the provider server to set up its own in-memory state
+      providerStatesSetupUrl: `http://localhost:${PORT}/_pact/provider-states`,
+      
+      // Keep state handlers as fallback (though providerStatesSetupUrl takes precedence)
       stateHandlers: {
         // Card validation states
         'a valid payment card': async () => {
