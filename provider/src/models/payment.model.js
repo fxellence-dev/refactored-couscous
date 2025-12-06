@@ -1,6 +1,13 @@
 // In-memory storage for demo purposes
 const transactions = new Map();
 
+// Format timestamp without milliseconds to match Pact expectations
+// Converts from: 2025-12-06T14:30:17.123Z
+// To: 2025-12-06T14:30:17Z
+function formatTimestamp(date = new Date()) {
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
 class PaymentModel {
   static createTransaction(data) {
     const transaction = {
@@ -12,8 +19,8 @@ class PaymentModel {
       settlementId: data.settlementId || null,
       refundId: data.refundId || null,
       merchantId: data.merchantId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: formatTimestamp(),
+      updatedAt: formatTimestamp()
     };
 
     transactions.set(transaction.transactionId, transaction);
@@ -33,7 +40,7 @@ class PaymentModel {
     const updated = {
       ...transaction,
       ...updates,
-      updatedAt: new Date().toISOString()
+      updatedAt: formatTimestamp()
     };
 
     transactions.set(transactionId, updated);

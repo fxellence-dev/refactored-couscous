@@ -126,7 +126,7 @@ describe('Pact Verification - Payment Gateway API', () => {
           PaymentModel.createTransaction({
             transactionId: 'txn_settled123',
             status: 'SETTLED',
-            amount: 150.00,
+            amount: 99.99,  // Must match consumer refund amount
             currency: 'USD',
             authorizationCode: 'AUTH-123456',
             settlementId: 'settle_abc123',
@@ -141,7 +141,7 @@ describe('Pact Verification - Payment Gateway API', () => {
           PaymentModel.createTransaction({
             transactionId: 'txn_settled123',
             status: 'SETTLED',
-            amount: 150.00,
+            amount: 99.99,  // Must match consumer refund amount
             currency: 'USD',
             authorizationCode: 'AUTH-123456',
             settlementId: 'settle_abc123',
