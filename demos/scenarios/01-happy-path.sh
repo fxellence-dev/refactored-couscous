@@ -30,18 +30,22 @@ echo ""
 
 echo "📤 Step 3: Publish consumer contract"
 cd "$PROJECT_ROOT"
-node scripts/publish-consumer-contract.js --version "happy-path-consumer"
+CONSUMER_VERSION="happy-path-consumer" node scripts/publish-consumer-contract.js
 echo "   ✅ Consumer contract published"
 echo ""
 
 echo "🔄 Step 4: Start provider and run verification"
+# Kill any existing provider on port 3000
+pkill -f "node.*provider" 2>/dev/null || true
+sleep 2
+
 cd "$PROJECT_ROOT/provider"
 npm start &
 PROVIDER_PID=$!
 sleep 5
 
 echo "   Provider running on PID: $PROVIDER_PID"
-npm run test:pact:publish
+GIT_COMMIT="happy-path-provider" npm run test:pact:publish
 echo "   ✅ Provider verification passed"
 echo ""
 
