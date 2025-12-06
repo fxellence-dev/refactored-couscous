@@ -43,7 +43,7 @@ echo ""
 echo "🔄 Step 4: Run provider verification"
 # Kill any existing provider on port 3000
 pkill -f "node.*provider" 2>/dev/null || true
-sleep 2
+sleep 3
 
 npm start &
 PROVIDER_PID=$!
