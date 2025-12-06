@@ -1,5 +1,6 @@
 const { Verifier } = require('@pact-foundation/pact');
 const path = require('path');
+const PaymentModel = require('../../src/models/payment.model');
 
 // Configuration
 const PORT = process.env.PORT || 3000;
@@ -45,23 +46,107 @@ describe('Pact Verification - Payment Gateway API', () => {
       
       // State handlers for provider states
       stateHandlers: {
-        'no authorization exists': async () => {
-          console.log('Setting up state: no authorization exists');
-          // Clean state - no setup needed
+        // Card validation states
+        'a valid payment card': async () => {
+          console.log('Setting up state: a valid payment card');
+          // No setup needed - provider validates any card not starting with 4000
+          PaymentModel.clearAll();
           return Promise.resolve();
         },
+        'an invalid payment card': async () => {
+          console.log('Setting up state: an invalid payment card');
+          // No setup needed - provider rejects cards starting with 4000
+          PaymentModel.clearAll();
+          return Promise.resolve();
+        },
+        
+        // Transaction existence states
+        'no transaction exists': async () => {
+          console.log('Setting up state: no transaction exists');
+          // Clean state - clear all transactions
+          PaymentModel.clearAll();
+          return Promise.resolve();
+        },
+        'no authorization exists': async () => {
+          console.log('Setting up state: no authorization exists');
+          // Clean state - clear all transactions
+          PaymentModel.clearAll();
+          return Promise.resolve();
+        },
+        
+        // Authorized payment states
         'authorization exists': async () => {
           console.log('Setting up state: authorization exists');
-          // In a real scenario, you might seed test data here
-          // For now, we use the in-memory store
+          // Create an authorized transaction with specific ID for settlement/status tests
+          PaymentModel.clearAll();
+          PaymentModel.createTransaction({
+            transactionId: 'txn_abc123def456',
+            status: 'AUTHORIZED',
+            amount: 99.99,
+            currency: 'USD',
+            authorizationCode: 'AUTH-789012',
+            merchantId: 'merchant_123'
+          });
+          return Promise.resolve();
+        },
+        'an authorized payment exists': async () => {
+          console.log('Setting up state: an authorized payment exists');
+          // Create an authorized transaction with specific ID for settlement/status tests
+          PaymentModel.clearAll();
+          PaymentModel.createTransaction({
+            transactionId: 'txn_abc123def456',
+            status: 'AUTHORIZED',
+            amount: 99.99,
+            currency: 'USD',
+            authorizationCode: 'AUTH-789012',
+            merchantId: 'merchant_123'
+          });
           return Promise.resolve();
         },
         'authorized payment exists': async () => {
           console.log('Setting up state: authorized payment exists');
+          // Create an authorized transaction
+          PaymentModel.clearAll();
+          PaymentModel.createTransaction({
+            transactionId: 'txn_abc123def456',
+            status: 'AUTHORIZED',
+            amount: 99.99,
+            currency: 'USD',
+            authorizationCode: 'AUTH-789012',
+            merchantId: 'merchant_123'
+          });
+          return Promise.resolve();
+        },
+        
+        // Settled payment states
+        'a settled payment exists': async () => {
+          console.log('Setting up state: a settled payment exists');
+          // Create a settled transaction with specific ID for refund/status tests
+          PaymentModel.clearAll();
+          PaymentModel.createTransaction({
+            transactionId: 'txn_settled123',
+            status: 'SETTLED',
+            amount: 150.00,
+            currency: 'USD',
+            authorizationCode: 'AUTH-123456',
+            settlementId: 'settle_abc123',
+            merchantId: 'merchant_123'
+          });
           return Promise.resolve();
         },
         'settled payment exists': async () => {
           console.log('Setting up state: settled payment exists');
+          // Create a settled transaction
+          PaymentModel.clearAll();
+          PaymentModel.createTransaction({
+            transactionId: 'txn_settled123',
+            status: 'SETTLED',
+            amount: 150.00,
+            currency: 'USD',
+            authorizationCode: 'AUTH-123456',
+            settlementId: 'settle_abc123',
+            merchantId: 'merchant_123'
+          });
           return Promise.resolve();
         }
       },
