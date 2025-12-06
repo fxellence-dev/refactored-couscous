@@ -41,7 +41,7 @@ echo "   Amount field type would change: string → number"
 echo ""
 
 echo "🧪 Step 3: Run provider tests"
-cd provider
+cd ../../provider
 echo "   Provider tests would pass (logic unchanged)"
 echo "   ✅ Tests pass with new type"
 echo ""
@@ -60,8 +60,8 @@ echo ""
 kill $PROVIDER_PID 2>/dev/null || true
 
 echo "🔍 Step 5: Check deployment safety"
-cd ..
-node scripts/can-i-deploy-provider.js --version "schema-mismatch-v1" || true
+cd ../..
+node scripts/can-i-deploy-consumer.js --version "schema-mismatch-v1" || {
 echo ""
 
 # Cleanup

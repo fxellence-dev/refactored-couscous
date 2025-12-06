@@ -32,7 +32,7 @@ echo "   ✅ Change prepared (simulated)"
 echo ""
 
 echo "🧪 Step 3: Run provider tests"
-cd provider
+cd ../../provider
 npm run test:api
 echo "   ✅ Provider API tests passed"
 echo ""
@@ -49,13 +49,13 @@ echo ""
 kill $PROVIDER_PID 2>/dev/null || true
 
 echo "🧪 Step 5: Run consumer tests (unchanged)"
-cd ../consumer
+cd ../../consumer
 npm test
 echo "   ✅ Consumer tests passed (unaware of new field)"
 echo ""
 
 echo "📤 Step 6: Publish contracts"
-cd ..
+cd ../..
 node scripts/publish-consumer-contract.js --version "backward-compatible-v1"
 echo "   ✅ Consumer contract published"
 echo ""

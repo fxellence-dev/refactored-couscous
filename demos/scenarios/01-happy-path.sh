@@ -20,19 +20,19 @@ echo "   Current commit: $ORIGINAL_COMMIT"
 echo ""
 
 echo "🧪 Step 2: Run consumer tests"
-cd ../consumer
+cd ../../consumer
 npm test
 echo "   ✅ Consumer tests passed"
 echo ""
 
 echo "📤 Step 3: Publish consumer contract"
-cd ..
+cd ../..
 node scripts/publish-consumer-contract.js --version "happy-path-consumer"
 echo "   ✅ Consumer contract published"
 echo ""
 
 echo "🔄 Step 4: Start provider and run verification"
-cd provider
+cd ../../provider
 npm start &
 PROVIDER_PID=$!
 sleep 5
@@ -43,7 +43,7 @@ echo "   ✅ Provider verification passed"
 echo ""
 
 echo "🔍 Step 5: Check if consumer can deploy"
-cd ..
+cd ../..
 node scripts/can-i-deploy-consumer.js --version "happy-path-consumer" || true
 echo ""
 

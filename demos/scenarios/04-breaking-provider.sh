@@ -35,7 +35,7 @@ echo "   Refund endpoint would be removed"
 echo ""
 
 echo "🧪 Step 3: Run provider API tests"
-cd provider
+cd ../../provider
 echo "   Provider tests would still pass (reduced functionality)"
 echo "   ✅ Remaining tests pass"
 echo ""
@@ -53,7 +53,7 @@ echo ""
 kill $PROVIDER_PID 2>/dev/null || true
 
 echo "🔍 Step 5: Check if provider can deploy"
-cd ..
+cd ../..
 echo "   Running can-i-deploy check..."
 node scripts/can-i-deploy-provider.js --version "breaking-provider-v1" || true
 echo ""

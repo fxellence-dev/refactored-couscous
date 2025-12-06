@@ -51,13 +51,13 @@ echo "   ✅ Tests pass with Pact mock server"
 echo ""
 
 echo "📤 Step 4: Publish consumer contract"
-cd ..
+cd ../..
 node scripts/publish-consumer-contract.js --version "breaking-consumer-v1"
 echo "   ✅ Consumer contract published to broker"
 echo ""
 
 echo "🔄 Step 5: Provider runs verification"
-cd provider
+cd ../../provider
 npm start &
 PROVIDER_PID=$!
 sleep 5
@@ -69,7 +69,7 @@ echo ""
 kill $PROVIDER_PID 2>/dev/null || true
 
 echo "🔍 Step 6: Check if consumer can deploy"
-cd ..
+cd ../..
 echo "   Running can-i-deploy check..."
 node scripts/can-i-deploy-consumer.js --version "breaking-consumer-v1" || true
 echo ""
