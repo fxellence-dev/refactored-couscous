@@ -58,7 +58,8 @@ class SettlementController {
     }
 
     // Process settlement
-    const settlementId = `settle_${uuidv4()}`;
+    // Generate simple alphanumeric ID (not UUID) to match consumer expectations
+    const settlementId = `settle_${Math.random().toString(36).substring(2, 8)}`;
     
     const updated = PaymentModel.updateTransaction(transactionId, {
       status: 'SETTLED',
@@ -154,7 +155,8 @@ class SettlementController {
     }
 
     // Process refund
-    const refundId = `refund_${uuidv4()}`;
+    // Generate simple alphanumeric ID (not UUID) to match consumer expectations
+    const refundId = `refund_${Math.random().toString(36).substring(2, 8)}`;
     
     const updated = PaymentModel.updateTransaction(transactionId, {
       status: 'REFUNDED',

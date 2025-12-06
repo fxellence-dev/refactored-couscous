@@ -52,7 +52,7 @@ class PactStateController {
           PaymentModel.createTransaction({
             transactionId: 'txn_settled123',
             status: 'SETTLED',
-            amount: 99.99,
+            amount: 150,
             currency: 'USD',
             authorizationCode: 'AUTH-123456',
             settlementId: 'settle_abc123',
