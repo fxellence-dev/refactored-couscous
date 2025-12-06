@@ -14,25 +14,28 @@ echo ""
 ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 ORIGINAL_COMMIT=$(git rev-parse HEAD)
 
+# Get project root (two levels up from demos/scenarios/)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 echo "📝 Step 1: Verify current state"
 echo "   Current branch: $ORIGINAL_BRANCH"
 echo "   Current commit: $ORIGINAL_COMMIT"
 echo ""
 
 echo "🧪 Step 2: Run consumer tests"
-cd ../../consumer
+cd "$PROJECT_ROOT/consumer"
 npm test
 echo "   ✅ Consumer tests passed"
 echo ""
 
 echo "📤 Step 3: Publish consumer contract"
-cd ../..
+cd "$PROJECT_ROOT"
 node scripts/publish-consumer-contract.js --version "happy-path-consumer"
 echo "   ✅ Consumer contract published"
 echo ""
 
 echo "🔄 Step 4: Start provider and run verification"
-cd ../../provider
+cd "$PROJECT_ROOT/provider"
 npm start &
 PROVIDER_PID=$!
 sleep 5
@@ -43,7 +46,7 @@ echo "   ✅ Provider verification passed"
 echo ""
 
 echo "🔍 Step 5: Check if consumer can deploy"
-cd ../..
+cd "$PROJECT_ROOT"
 node scripts/can-i-deploy-consumer.js --version "happy-path-consumer" || true
 echo ""
 

@@ -12,6 +12,9 @@ echo ""
 
 DEMO_BRANCH="demo/backward-compatible"
 
+# Get project root (two levels up from demos/scenarios/)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 echo "📝 Step 1: Create demo branch"
 git checkout -b $DEMO_BRANCH 2>/dev/null || git checkout $DEMO_BRANCH
 echo "   Branch: $DEMO_BRANCH"
@@ -32,7 +35,7 @@ echo "   ✅ Change prepared (simulated)"
 echo ""
 
 echo "🧪 Step 3: Run provider tests"
-cd ../../provider
+cd "$PROJECT_ROOT/provider"
 npm run test:api
 echo "   ✅ Provider API tests passed"
 echo ""
@@ -49,13 +52,13 @@ echo ""
 kill $PROVIDER_PID 2>/dev/null || true
 
 echo "🧪 Step 5: Run consumer tests (unchanged)"
-cd ../../consumer
+cd "$PROJECT_ROOT/consumer"
 npm test
 echo "   ✅ Consumer tests passed (unaware of new field)"
 echo ""
 
 echo "📤 Step 6: Publish contracts"
-cd ../..
+cd "$PROJECT_ROOT"
 node scripts/publish-consumer-contract.js --version "backward-compatible-v1"
 echo "   ✅ Consumer contract published"
 echo ""

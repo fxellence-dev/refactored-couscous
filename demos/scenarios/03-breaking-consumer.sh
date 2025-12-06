@@ -12,6 +12,9 @@ echo ""
 
 DEMO_BRANCH="demo/breaking-consumer"
 
+# Get project root (two levels up from demos/scenarios/)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 echo "📝 Step 1: Create demo branch"
 git checkout -b $DEMO_BRANCH 2>/dev/null || git checkout $DEMO_BRANCH
 echo "   Branch: $DEMO_BRANCH"
@@ -45,19 +48,19 @@ echo "   Consumer now expects 'merchantName' field"
 echo ""
 
 echo "🧪 Step 3: Run consumer tests"
-cd consumer
+cd "$PROJECT_ROOT/consumer"
 echo "   Consumer tests would pass (using mock)"
 echo "   ✅ Tests pass with Pact mock server"
 echo ""
 
 echo "📤 Step 4: Publish consumer contract"
-cd ../..
+cd "$PROJECT_ROOT"
 node scripts/publish-consumer-contract.js --version "breaking-consumer-v1"
 echo "   ✅ Consumer contract published to broker"
 echo ""
 
 echo "🔄 Step 5: Provider runs verification"
-cd ../../provider
+cd "$PROJECT_ROOT/provider"
 npm start &
 PROVIDER_PID=$!
 sleep 5
@@ -69,7 +72,7 @@ echo ""
 kill $PROVIDER_PID 2>/dev/null || true
 
 echo "🔍 Step 6: Check if consumer can deploy"
-cd ../..
+cd "$PROJECT_ROOT"
 echo "   Running can-i-deploy check..."
 node scripts/can-i-deploy-consumer.js --version "breaking-consumer-v1" || true
 echo ""

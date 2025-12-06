@@ -12,6 +12,9 @@ echo ""
 
 DEMO_BRANCH="demo/breaking-provider"
 
+# Get project root (two levels up from demos/scenarios/)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 echo "📝 Step 1: Create demo branch"
 git checkout -b $DEMO_BRANCH 2>/dev/null || git checkout $DEMO_BRANCH
 echo "   Branch: $DEMO_BRANCH"

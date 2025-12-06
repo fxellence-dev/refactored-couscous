@@ -12,6 +12,9 @@ echo ""
 
 DEMO_BRANCH="demo/schema-mismatch"
 
+# Get project root (two levels up from demos/scenarios/)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 echo "📝 Step 1: Create demo branch"
 git checkout -b $DEMO_BRANCH 2>/dev/null || git checkout $DEMO_BRANCH
 echo "   Branch: $DEMO_BRANCH"
@@ -41,7 +44,7 @@ echo "   Amount field type would change: string → number"
 echo ""
 
 echo "🧪 Step 3: Run provider tests"
-cd ../../provider
+cd "$PROJECT_ROOT/provider"
 echo "   Provider tests would pass (logic unchanged)"
 echo "   ✅ Tests pass with new type"
 echo ""
@@ -60,7 +63,7 @@ echo ""
 kill $PROVIDER_PID 2>/dev/null || true
 
 echo "🔍 Step 5: Check deployment safety"
-cd ../..
+cd "$PROJECT_ROOT"
 node scripts/can-i-deploy-consumer.js --version "schema-mismatch-v1" || {
 echo ""
 
