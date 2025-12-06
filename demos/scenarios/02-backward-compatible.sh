@@ -41,11 +41,15 @@ echo "   ✅ Provider API tests passed"
 echo ""
 
 echo "🔄 Step 4: Run provider verification"
+# Kill any existing provider on port 3000
+pkill -f "node.*provider" 2>/dev/null || true
+sleep 2
+
 npm start &
 PROVIDER_PID=$!
 sleep 5
 
-npm run test:pact:publish
+GIT_COMMIT="backward-compatible-provider" npm run test:pact:publish
 echo "   ✅ Provider verification passed"
 echo ""
 
@@ -59,7 +63,7 @@ echo ""
 
 echo "📤 Step 6: Publish contracts"
 cd "$PROJECT_ROOT"
-node scripts/publish-consumer-contract.js --version "backward-compatible-v1"
+CONSUMER_VERSION="backward-compatible-v1" node scripts/publish-consumer-contract.js
 echo "   ✅ Consumer contract published"
 echo ""
 
